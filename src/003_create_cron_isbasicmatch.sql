@@ -10,6 +10,15 @@ AS
 BEGIN
 	IF(@expression = '*')
 		RETURN 1
+	IF(CHARINDEX('-', @expression, 1) > 0 and CHARINDEX(',', @expression, 1) > 0)
+	    begin
+            DECLARE @tmptbl TABLE ([result] INT)
+
+	        INSERT @tmptbl(result)
+	        SELECT value, [dbo].[cron_isbasicmatch](@value) FROM string_split(@expression,',')
+
+	        RETURN IIF((SELECT top 1 1 FROM @tmptbl WHERE [result] = 1) = 1, 1, 0)
+        end
 	IF(CHARINDEX('-', @expression, 1) > 0)
 		RETURN dbo.cron_isvalueinrange(@expression, @value)
 	IF(CHARINDEX(',', @expression, 1) > 0)
